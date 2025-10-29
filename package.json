@@ -1,4 +1,5 @@
 {
+  
   "name": "carbonate-browser",
   "version": "1.0.0",
   "description": "Carbonate Browser - A fast, lightweight Chromium-based browser with built-in apps",
@@ -31,6 +32,10 @@
     "electron-store": "^8.1.0",
     "node-fetch": "^2.6.7",
     "sqlite3": "^5.1.6"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/trungnguyen228801/carbonate-browser.git"
   },
   "build": {
     "appId": "com.carbonate.browser",
@@ -120,7 +125,7 @@
     },
     "publish": {
       "provider": "github",
-      "owner": "your-username",
+      "owner": "trungnguyen228801",
       "repo": "carbonate-browser"
     }
   }
