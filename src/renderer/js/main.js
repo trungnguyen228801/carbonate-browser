@@ -158,8 +158,8 @@ class CarbonateBrowser {
         // Update address bar
         document.getElementById('addressInput').value = url;
         
-        // For now, just show a placeholder since we're not implementing actual web browsing
-        this.showToast('Navigation to: ' + url, 'success');
+        // Load the URL in the current tab
+        this.loadUrlInCurrentTab(url);
     }
 
     getSearchUrl(query) {
@@ -169,6 +169,44 @@ class CarbonateBrowser {
             bing: `https://www.bing.com/search?q=${encodeURIComponent(query)}`
         };
         return searchEngines[this.settings.searchEngine] || searchEngines.yahoo;
+    }
+
+    loadUrlInCurrentTab(url) {
+        const currentTab = document.querySelector('.tab.active');
+        if (!currentTab) return;
+
+        const tabId = currentTab.getAttribute('data-tab-id');
+        const tabContent = document.getElementById(`tab-${tabId}`);
+        
+        if (!tabContent) return;
+
+        // Update tab title
+        const tabTitle = currentTab.querySelector('.tab-title');
+        if (tabTitle) {
+            tabTitle.textContent = this.extractDomain(url) || 'Loading...';
+        }
+
+        // Create iframe to load the URL
+        tabContent.innerHTML = `
+            <div class="browser-content">
+                <iframe src="${url}" 
+                        style="width: 100%; height: 100%; border: none;"
+                        sandbox="allow-same-origin allow-scripts allow-popups allow-forms">
+                </iframe>
+            </div>
+        `;
+
+        // Show loading state
+        this.showToast('Loading: ' + url, 'success');
+    }
+
+    extractDomain(url) {
+        try {
+            const urlObj = new URL(url);
+            return urlObj.hostname;
+        } catch (e) {
+            return url;
+        }
     }
 
     goBack() {
