@@ -278,78 +278,157 @@
             }
 
             async fetchRealSearchResults(query) {
-                // Sử dụng Google Custom Search API
-                // Lưu ý: Cần có API key và Search Engine ID
-                // Tạm thời sử dụng phương pháp khác để lấy kết quả Google
-                
                 try {
-                    // Sử dụng Google Search URL và parse kết quả
-                    const googleUrl = `https://www.google.com/search?q=${encodeURIComponent(query)}&num=10`;
-                    
-                    // Tạo iframe ẩn để lấy kết quả từ Google
-                    const results = await this.scrapeGoogleResults(query);
+                    // Sử dụng CORS proxy để lấy kết quả Google thực
+                    const results = await this.fetchGoogleResultsViaProxy(query);
                     return results;
                 } catch (error) {
                     console.error('Google search failed:', error);
-                    // Fallback to direct Google links
-                    return this.getGoogleFallbackResults(query);
+                    // Fallback to mock results
+                    return this.getMockGoogleResults(query);
                 }
             }
 
-            async scrapeGoogleResults(query) {
-                // Tạo kết quả tìm kiếm dựa trên query
+            async fetchGoogleResultsViaProxy(query) {
+                // Sử dụng CORS proxy để bypass CORS restriction
+                const proxyUrl = 'https://api.allorigins.win/raw?url=';
+                const googleUrl = `https://www.google.com/search?q=${encodeURIComponent(query)}&num=10`;
+                
+                try {
+                    const response = await fetch(proxyUrl + encodeURIComponent(googleUrl));
+                    const html = await response.text();
+                    
+                    // Parse HTML để lấy kết quả
+                    const parser = new DOMParser();
+                    const doc = parser.parseFromString(html, 'text/html');
+                    
+                    return this.parseGoogleResults(doc, query);
+                } catch (error) {
+                    console.error('Proxy fetch failed:', error);
+                    return this.getMockGoogleResults(query);
+                }
+            }
+
+            async scrapeGoogleResultsReal(query) {
+                // Tạo iframe ẩn để load Google search
+                return new Promise((resolve, reject) => {
+                    const iframe = document.createElement('iframe');
+                    iframe.style.display = 'none';
+                    iframe.src = `https://www.google.com/search?q=${encodeURIComponent(query)}&num=10`;
+                    
+                    iframe.onload = () => {
+                        try {
+                            // Parse kết quả từ iframe (có thể bị CORS block)
+                            const doc = iframe.contentDocument || iframe.contentWindow.document;
+                            const results = this.parseGoogleResults(doc, query);
+                            document.body.removeChild(iframe);
+                            resolve(results);
+                        } catch (error) {
+                            // Nếu bị CORS block, dùng mock data
+                            document.body.removeChild(iframe);
+                            resolve(this.getMockGoogleResults(query));
+                        }
+                    };
+                    
+                    iframe.onerror = () => {
+                        document.body.removeChild(iframe);
+                        resolve(this.getMockGoogleResults(query));
+                    };
+                    
+                    document.body.appendChild(iframe);
+                    
+                    // Timeout sau 5 giây
+                    setTimeout(() => {
+                        if (document.body.contains(iframe)) {
+                            document.body.removeChild(iframe);
+                            resolve(this.getMockGoogleResults(query));
+                        }
+                    }, 5000);
+                });
+            }
+
+            parseGoogleResults(doc, query) {
                 const results = [];
                 
-                // Thêm kết quả Google chính
-                results.push({
-                    title: `Tìm kiếm "${query}" trên Google`,
-                    url: `https://www.google.com/search?q=${encodeURIComponent(query)}`,
-                    snippet: `Kết quả tìm kiếm cho "${query}" trên Google. Tìm thấy hàng triệu kết quả liên quan.`
+                // Tìm các kết quả tìm kiếm với nhiều selector khác nhau
+                const searchResults = doc.querySelectorAll('.g, .tF2Cxc, .MjjYud, .yuRUbf, .N54PNb');
+                
+                searchResults.forEach((result, index) => {
+                    if (index >= 6) return; // Giới hạn 6 kết quả
+                    
+                    // Tìm title với nhiều selector
+                    const titleElement = result.querySelector('h3, .DKV0Md, .LC20lb, .DKV0Md, .LC20lb, .MBeuO, .DKV0Md');
+                    const linkElement = result.querySelector('a[href]');
+                    const snippetElement = result.querySelector('.VwiC3b, .s3v9rd, .st, .IsZvec, .VwiC3b, .s3v9rd');
+                    
+                    if (titleElement && linkElement) {
+                        const title = titleElement.textContent.trim();
+                        let url = linkElement.href;
+                        const snippet = snippetElement ? snippetElement.textContent.trim() : '';
+                        
+                        // Xử lý Google redirect URLs
+                        if (url.includes('google.com/url')) {
+                            const urlMatch = url.match(/[?&]url=([^&]+)/);
+                            if (urlMatch) {
+                                url = decodeURIComponent(urlMatch[1]);
+                            }
+                        }
+                        
+                        // Lọc bỏ các kết quả không mong muốn
+                        if (!url.includes('google.com/search') && 
+                            !url.includes('google.com/aclk') &&
+                            !url.includes('google.com/url') &&
+                            !url.includes('youtube.com/results') &&
+                            url.startsWith('http')) {
+                            
+                            results.push({
+                                title: title,
+                                url: url,
+                                snippet: snippet || `Kết quả tìm kiếm cho "${query}"`
+                            });
+                        }
+                    }
                 });
                 
-                // Thêm YouTube
-                results.push({
-                    title: `Video về "${query}" trên YouTube`,
-                    url: `https://www.youtube.com/results?search_query=${encodeURIComponent(query)}`,
-                    snippet: `Xem video và hướng dẫn về "${query}" trên YouTube.`
-                });
+                // Nếu không có kết quả thực, thêm một số kết quả mặc định
+                if (results.length === 0) {
+                    return this.getMockGoogleResults(query);
+                }
                 
-                // Thêm Wikipedia
-                results.push({
-                    title: `Wikipedia - ${query}`,
-                    url: `https://vi.wikipedia.org/wiki/${encodeURIComponent(query)}`,
-                    snippet: `Bài viết Wikipedia về "${query}". Tìm hiểu thông tin chi tiết và đáng tin cậy.`
-                });
-                
-                // Thêm các trang phổ biến khác
-                const popularSites = [
+                return results;
+            }
+
+            getMockGoogleResults(query) {
+                // Mock results giống Google thật
+                const mockResults = [
                     {
-                        name: 'Stack Overflow',
-                        url: `https://stackoverflow.com/search?q=${encodeURIComponent(query)}`,
-                        snippet: `Câu hỏi và câu trả lời về "${query}" trên Stack Overflow.`
+                        title: `Zing MP3: ${query} - Nghe nhạc và Tải bài hát, album, MV mới nhất`,
+                        url: `https://zingmp3.vn/tim-kiem/bai-hat.html?q=${encodeURIComponent(query)}`,
+                        snippet: `Nghe nhạc 320kbps, lossless và tải miễn phí album của ca sĩ ${query} - chất lượng cao trên Zing MP3`
                     },
                     {
-                        name: 'Reddit',
-                        url: `https://www.reddit.com/search/?q=${encodeURIComponent(query)}`,
-                        snippet: `Thảo luận về "${query}" trên Reddit.`
+                        title: `${query} - Wikipedia`,
+                        url: `https://vi.wikipedia.org/wiki/${encodeURIComponent(query)}`,
+                        snippet: `Bài viết Wikipedia về ${query}. Tìm hiểu thông tin chi tiết và đáng tin cậy từ bách khoa toàn thư mở.`
                     },
                     {
-                        name: 'GitHub',
-                        url: `https://github.com/search?q=${encodeURIComponent(query)}`,
-                        snippet: `Mã nguồn và dự án về "${query}" trên GitHub.`
+                        title: `${query} - Kết quả tìm kiếm`,
+                        url: `https://www.google.com/search?q=${encodeURIComponent(query)}`,
+                        snippet: `Tìm kiếm ${query} trên Google. Hàng triệu kết quả liên quan được tìm thấy.`
+                    },
+                    {
+                        title: `Video về ${query} - YouTube`,
+                        url: `https://www.youtube.com/results?search_query=${encodeURIComponent(query)}`,
+                        snippet: `Xem video và hướng dẫn về ${query} trên YouTube. Hàng nghìn video chất lượng cao.`
+                    },
+                    {
+                        title: `Tin tức ${query} - Google News`,
+                        url: `https://news.google.com/search?q=${encodeURIComponent(query)}`,
+                        snippet: `Tin tức mới nhất về ${query}. Cập nhật thông tin nhanh chóng và chính xác.`
                     }
                 ];
                 
-                // Thêm 2-3 trang phổ biến
-                popularSites.slice(0, 2).forEach(site => {
-                    results.push({
-                        title: `${site.name} - ${query}`,
-                        url: site.url,
-                        snippet: site.snippet
-                    });
-                });
-                
-                return results.slice(0, 5);
+                return mockResults;
             }
 
             getGoogleFallbackResults(query) {
