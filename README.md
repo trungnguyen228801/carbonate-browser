@@ -1,222 +1,99 @@
-# Carbonate Browser
+# 🌐 Carbonate Browser
 
-A fast, lightweight Chromium-based desktop browser built with Electron, featuring built-in apps and curated content for an enhanced browsing experience.
+A fast, lightweight Chromium-based browser with built-in apps.
 
-## Features
+## ✨ Features
 
-### 🚀 Core Browser Features
-- **Chromium-based**: Built on Electron for fast, modern web browsing
-- **Search Autocomplete**: Intelligent search suggestions with Yahoo as the default search engine
-- **Tab Management**: Full tab support with keyboard shortcuts
-- **Bookmark Management**: Import, export, and organize bookmarks
-- **Auto-launch**: Start with Windows for quick access
+- 🚀 **Fast & Lightweight** - Optimized for speed and low resource usage
+- 📱 **Built-in Apps** - 8 integrated applications (Calculator, Notes, Weather, etc.)
+- 🔍 **Smart Search** - Auto-suggestions with Yahoo as default
+- 📚 **Easy Import** - Import bookmarks and settings from Chrome, Firefox
+- 🔄 **Auto Updates** - Automatic updates to stay current
+- 🛡️ **Secure** - Context isolation, sandboxing, and modern security features
 
-### 📱 Built-in Apps
-- **Calculator**: Basic calculator for quick calculations
-- **Notes**: Take and save notes locally
-- **Weather**: Check current weather and forecast
-- **News**: Latest news from various sources
-- **Calendar**: Calendar and event management
-- **Files**: File manager and browser
-- **Settings**: Browser settings and preferences
-- **Help**: Help and support information
+## 📥 Download
 
-### 🔧 Easy Migration
-- **Import Bookmarks**: Seamlessly transfer bookmarks from Chrome, Firefox, and other browsers
-- **Import Settings**: Transfer search engine preferences and other settings
-- **Auto-detection**: Automatically detect and import from common browser locations
+### Windows
+- [Download Latest Release](https://github.com/trungnguyen228801/carbonate-browser/releases/latest)
+- Windows 10/11 (64-bit)
+- ~150MB installer
 
-### 🎨 Modern Interface
-- **Clean Design**: Modern, intuitive user interface
-- **Dark Mode Support**: Automatic dark mode detection
-- **Responsive**: Works on different screen sizes
-- **Customizable**: Personalize your browsing experience
+### System Requirements
+- **Windows**: Windows 10/11 (64-bit)
+- **RAM**: 4GB (8GB recommended)
+- **Storage**: 200MB free space
 
-## Installation
+## 🚀 Quick Start
+
+1. Download the installer from [Releases](https://github.com/trungnguyen228801/carbonate-browser/releases/latest)
+2. Run the installer as administrator
+3. Launch Carbonate Browser and start browsing!
+
+## 🛠️ Development
 
 ### Prerequisites
-- Node.js (v16 or higher)
-- npm or yarn
+- Node.js 18+
+- npm
 
 ### Setup
-1. Clone the repository:
 ```bash
-git clone <repository-url>
+git clone https://github.com/trungnguyen228801/carbonate-browser.git
 cd carbonate-browser
-```
-
-2. Install dependencies:
-```bash
 npm install
 ```
 
-3. Start the development server:
+### Development
 ```bash
 npm run dev
 ```
 
-4. Build for production:
+### Build
 ```bash
-npm run build
+npm run build:all
 ```
 
-## Usage
+## 📱 Built-in Apps
 
-### Starting the Browser
-```bash
-npm start
-```
+1. **Calculator** - Basic and scientific calculator
+2. **Notes** - Take and organize notes
+3. **Weather** - Current weather and forecasts
+4. **News** - Latest news headlines
+5. **Calendar** - Event and task management
+6. **Files** - File manager
+7. **Settings** - Browser configuration
+8. **Help** - User guide and support
 
-### Keyboard Shortcuts
-- `Ctrl+T` - New tab
-- `Ctrl+N` - New window
-- `Ctrl+D` - Add bookmark
-- `Ctrl+,` - Open settings
-- `F5` - Refresh page
-- `Ctrl+W` - Close tab
-- `Ctrl+Tab` - Switch to next tab
-- `Ctrl+Shift+Tab` - Switch to previous tab
+## 🔧 Configuration
 
-### Importing Data
-1. Go to **File > Import Bookmarks**
-2. Select your bookmarks file (HTML or JSON format)
-3. The browser will automatically import and organize your bookmarks
+The browser uses `electron-store` for settings persistence. Configuration files are stored in:
+- **Windows**: `%APPDATA%/carbonate-browser`
+- **macOS**: `~/Library/Application Support/carbonate-browser`
+- **Linux**: `~/.config/carbonate-browser`
 
-### Built-in Apps
-Access built-in apps from:
-- The new tab page
-- The apps button in the navigation bar
-- The apps modal
-
-## Development
-
-### Project Structure
-```
-carbonate-browser/
-├── src/
-│   ├── main.js              # Main Electron process
-│   ├── preload.js           # Preload script for security
-│   ├── renderer/            # Renderer process files
-│   │   ├── index.html       # Main HTML file
-│   │   ├── styles/          # CSS files
-│   │   └── js/              # JavaScript files
-│   └── utils/               # Utility functions
-├── assets/                  # Static assets
-└── package.json            # Project configuration
-```
-
-### Key Components
-- **Main Process** (`src/main.js`): Handles window creation, menu setup, and IPC
-- **Renderer Process** (`src/renderer/`): UI and user interactions
-- **Apps System** (`src/renderer/js/apps.js`): Built-in applications
-- **Search System** (`src/renderer/js/search.js`): Search autocomplete and suggestions
-- **Bookmarks** (`src/renderer/js/bookmarks.js`): Bookmark management
-- **Tabs** (`src/renderer/js/tabs.js`): Tab management system
-
-### Adding New Apps
-1. Register the app in `src/renderer/js/apps.js`
-2. Add the app HTML template
-3. Implement the app functionality
-4. Add any necessary styling
-
-## Configuration
-
-### Settings
-The browser stores settings in Electron's secure storage:
-- Search engine preferences
-- Auto-launch settings
-- Bookmark display options
-- Custom app configurations
-
-### Search Engines
-Supported search engines:
-- Yahoo (default)
-- Google
-- Bing
-
-## Building and Distribution
-
-### Development Build
-```bash
-npm run dev
-```
-
-### Production Build
-```bash
-npm run build
-```
-
-### Create Installer
-```bash
-npm run dist
-```
-
-The installer will be created in the `dist/` directory.
-
-## Browser Import Support
-
-### Supported Formats
-- **HTML Bookmarks**: Chrome, Firefox, Safari exports
-- **JSON Bookmarks**: Custom bookmark exports
-- **Auto-detection**: Automatic detection of browser data
-
-### Supported Browsers
-- Google Chrome
-- Mozilla Firefox
-- Microsoft Edge
-- Safari (macOS)
-
-## Performance
-
-### Optimizations
-- **Lightweight**: Minimal resource usage
-- **Fast Startup**: Optimized for quick launch times
-- **Efficient Memory**: Smart memory management
-- **Caching**: Intelligent caching for better performance
-
-## Security
-
-### Security Features
-- **Context Isolation**: Secure renderer process
-- **No Node Integration**: Disabled in renderer for security
-- **Preload Scripts**: Secure communication between processes
-- **Auto-updates**: Built-in update mechanism
-
-## Contributing
+## 🤝 Contributing
 
 1. Fork the repository
-2. Create a feature branch
-3. Make your changes
-4. Add tests if applicable
-5. Submit a pull request
+2. Create a feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit your changes (`git commit -m 'Add amazing feature'`)
+4. Push to the branch (`git push origin feature/amazing-feature`)
+5. Open a Pull Request
 
-## License
+## 📄 License
 
-MIT License - see LICENSE file for details.
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
-## Support
+## 🙏 Acknowledgments
 
-For support and questions:
-- Check the built-in Help app
-- Review the documentation
-- Open an issue on GitHub
+- Built with [Electron](https://electronjs.org/)
+- Powered by [Chromium](https://www.chromium.org/)
+- Icons by [Feather Icons](https://feathericons.com/)
 
-## Roadmap
+## 📞 Support
 
-### Planned Features
-- [ ] WebExtensions support
-- [ ] Sync across devices
-- [ ] Advanced privacy features
-- [ ] Custom themes
-- [ ] More built-in apps
-- [ ] Voice search
-- [ ] Gesture support
+- 🐛 [Report Issues](https://github.com/trungnguyen228801/carbonate-browser/issues)
+- 💬 [Discussions](https://github.com/trungnguyen228801/carbonate-browser/discussions)
+- 📧 Email: support@carbonate-browser.com
 
 ---
 
-**Carbonate Browser** - Fast, lightweight browsing with built-in apps and curated content.
-
-
-
-
-
+Made with ❤️ by the Carbonate Team

@@ -29,6 +29,7 @@
   },
   "dependencies": {
     "electron-store": "^8.1.0",
+    "ffmpeg-static": "^5.2.0",
     "node-fetch": "^2.6.7"
   },
   "repository": {
@@ -46,9 +47,18 @@
       "assets/**/*",
       "node_modules/**/*"
     ],
+    "asarUnpack": [
+      "node_modules/ffmpeg-static/**/*"
+    ],
     "win": {
       "target": "nsis",
-      "verifyUpdateCodeSignature": false
+      "verifyUpdateCodeSignature": false,
+      "extraResources": [
+        {
+          "from": "node_modules/ffmpeg-static",
+          "to": "ffmpeg-static"
+        }
+      ]
     },
     "mac": {
       "target": "dmg"
