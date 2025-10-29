@@ -47,19 +47,14 @@
       "node_modules/**/*"
     ],
     "win": {
-      "target": "portable",
-      "verifyUpdateCodeSignature": false,
-      "forceCodeSigning": false
+      "target": "nsis",
+      "verifyUpdateCodeSignature": false
     },
     "mac": {
-      "target": "dmg",
-      "icon": "assets/icon.png",
-      "category": "public.app-category.productivity"
+      "target": "dmg"
     },
     "linux": {
-      "target": "AppImage",
-      "icon": "assets/icon.png",
-      "category": "Network"
+      "target": "AppImage"
     },
     "nsis": {
       "oneClick": false,
