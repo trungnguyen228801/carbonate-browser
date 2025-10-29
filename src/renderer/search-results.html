@@ -134,12 +134,62 @@
         .suggestion-item:hover {
             background: #e8f0fe;
         }
+
+        .search-suggestions {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            background: white;
+            border: 1px solid #dadce0;
+            border-radius: 0 0 8px 8px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            z-index: 1000;
+            max-height: 300px;
+            overflow-y: auto;
+            display: none;
+        }
+
+        .suggestion-item {
+            display: flex;
+            align-items: center;
+            padding: 12px 16px;
+            cursor: pointer;
+            border-bottom: 1px solid #f1f3f4;
+            transition: background-color 0.2s;
+        }
+
+        .suggestion-item:last-child {
+            border-bottom: none;
+        }
+
+        .suggestion-item:hover,
+        .suggestion-item.active {
+            background: #f8f9fa;
+        }
+
+        .suggestion-icon {
+            margin-right: 12px;
+            color: #5f6368;
+        }
+
+        .suggestion-text {
+            flex: 1;
+            color: #3c4043;
+        }
+
+        .suggestion-highlight {
+            font-weight: 500;
+        }
     </style>
 </head>
 <body>
     <div class="search-header">
         <form class="search-form" id="searchForm">
-            <input type="text" class="search-input" id="searchInput" placeholder="Tìm kiếm..." autocomplete="off">
+            <div style="position: relative; flex: 1;">
+                <input type="text" class="search-input" id="searchInput" placeholder="Tìm kiếm..." autocomplete="off">
+                <div class="search-suggestions" id="searchSuggestions"></div>
+            </div>
             <button type="submit" class="search-btn">Tìm kiếm</button>
         </form>
         <div class="search-stats" id="searchStats"></div>
@@ -155,6 +205,8 @@
     <script>
         class SearchResults {
             constructor() {
+                this.suggestions = [];
+                this.debounceTimer = null;
                 this.init();
             }
 
@@ -173,8 +225,31 @@
                     e.preventDefault();
                     const query = document.getElementById('searchInput').value.trim();
                     if (query) {
+                        this.hideSuggestions();
                         this.performSearch(query);
                     }
+                });
+
+                // Setup search input for suggestions
+                const searchInput = document.getElementById('searchInput');
+                searchInput.addEventListener('input', (e) => {
+                    this.handleSearchInput(e.target.value);
+                });
+
+                searchInput.addEventListener('focus', () => {
+                    if (this.suggestions.length > 0) {
+                        this.showSuggestions();
+                    }
+                });
+
+                searchInput.addEventListener('blur', () => {
+                    // Delay hiding to allow clicking on suggestions
+                    setTimeout(() => this.hideSuggestions(), 200);
+                });
+
+                // Setup keyboard navigation
+                searchInput.addEventListener('keydown', (e) => {
+                    this.handleKeyNavigation(e);
                 });
             }
 
@@ -288,6 +363,177 @@
                         <p>${message}</p>
                     </div>
                 `;
+            }
+
+            handleSearchInput(query) {
+                // Clear previous timer
+                if (this.debounceTimer) {
+                    clearTimeout(this.debounceTimer);
+                }
+
+                // If query is too short, hide suggestions
+                if (query.length < 2) {
+                    this.hideSuggestions();
+                    return;
+                }
+
+                // Debounce the search to avoid too many API calls
+                this.debounceTimer = setTimeout(() => {
+                    this.fetchSuggestions(query);
+                }, 300);
+            }
+
+            async fetchSuggestions(query) {
+                try {
+                    // Get suggestions from a mock API (in real app, use Google Suggest API)
+                    const suggestions = await this.getSearchSuggestions(query);
+                    this.suggestions = suggestions;
+                    this.displaySuggestions();
+                } catch (error) {
+                    console.error('Failed to fetch suggestions:', error);
+                    this.generateLocalSuggestions(query);
+                }
+            }
+
+            async getSearchSuggestions(query) {
+                // Simulate API delay
+                await new Promise(resolve => setTimeout(resolve, 200));
+
+                // Mock suggestions based on query
+                const commonSuggestions = [
+                    'tìm kiếm',
+                    'tìm kiếm google',
+                    'tìm kiếm youtube',
+                    'tìm kiếm facebook',
+                    'tìm kiếm wikipedia',
+                    'tìm kiếm tin tức',
+                    'tìm kiếm thời tiết',
+                    'tìm kiếm bản đồ',
+                    'tìm kiếm dịch thuật',
+                    'tìm kiếm hình ảnh'
+                ];
+
+                return commonSuggestions
+                    .filter(item => item.toLowerCase().includes(query.toLowerCase()))
+                    .slice(0, 8);
+            }
+
+            generateLocalSuggestions(query) {
+                const localSuggestions = [
+                    `${query} google`,
+                    `${query} youtube`,
+                    `${query} facebook`,
+                    `${query} wikipedia`,
+                    `${query} tin tức`,
+                    `${query} thời tiết`,
+                    `${query} bản đồ`,
+                    `${query} dịch thuật`
+                ];
+
+                this.suggestions = localSuggestions.slice(0, 8);
+                this.displaySuggestions();
+            }
+
+            displaySuggestions() {
+                const container = document.getElementById('searchSuggestions');
+                if (!container) return;
+
+                if (this.suggestions.length === 0) {
+                    this.hideSuggestions();
+                    return;
+                }
+
+                container.innerHTML = this.suggestions.map(suggestion => `
+                    <div class="suggestion-item" data-suggestion="${suggestion}">
+                        <div class="suggestion-icon">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                                <path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/>
+                            </svg>
+                        </div>
+                        <div class="suggestion-text">${suggestion}</div>
+                    </div>
+                `).join('');
+
+                // Add click handlers
+                container.querySelectorAll('.suggestion-item').forEach(item => {
+                    item.addEventListener('click', () => {
+                        const suggestion = item.dataset.suggestion;
+                        document.getElementById('searchInput').value = suggestion;
+                        this.hideSuggestions();
+                        this.performSearch(suggestion);
+                    });
+                });
+
+                this.showSuggestions();
+            }
+
+            showSuggestions() {
+                const container = document.getElementById('searchSuggestions');
+                if (container && this.suggestions.length > 0) {
+                    container.style.display = 'block';
+                }
+            }
+
+            hideSuggestions() {
+                const container = document.getElementById('searchSuggestions');
+                if (container) {
+                    container.style.display = 'none';
+                }
+            }
+
+            handleKeyNavigation(e) {
+                const suggestions = document.getElementById('searchSuggestions');
+                if (!suggestions || suggestions.style.display === 'none') {
+                    return;
+                }
+
+                const items = suggestions.querySelectorAll('.suggestion-item');
+                const activeItem = suggestions.querySelector('.suggestion-item.active');
+
+                switch (e.key) {
+                    case 'ArrowDown':
+                        e.preventDefault();
+                        this.navigateSuggestions(items, activeItem, 1);
+                        break;
+                    case 'ArrowUp':
+                        e.preventDefault();
+                        this.navigateSuggestions(items, activeItem, -1);
+                        break;
+                    case 'Enter':
+                        e.preventDefault();
+                        if (activeItem) {
+                            const suggestion = activeItem.dataset.suggestion;
+                            document.getElementById('searchInput').value = suggestion;
+                            this.hideSuggestions();
+                            this.performSearch(suggestion);
+                        }
+                        break;
+                    case 'Escape':
+                        this.hideSuggestions();
+                        break;
+                }
+            }
+
+            navigateSuggestions(items, activeItem, direction) {
+                // Remove active class from current item
+                if (activeItem) {
+                    activeItem.classList.remove('active');
+                }
+
+                let newIndex = 0;
+                if (activeItem) {
+                    const currentIndex = Array.from(items).indexOf(activeItem);
+                    newIndex = currentIndex + direction;
+                }
+
+                // Wrap around
+                if (newIndex < 0) newIndex = items.length - 1;
+                if (newIndex >= items.length) newIndex = 0;
+
+                // Add active class to new item
+                if (items[newIndex]) {
+                    items[newIndex].classList.add('active');
+                }
             }
         }
 
