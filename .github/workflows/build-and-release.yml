@@ -33,14 +33,7 @@ jobs:
       run: npm install
 
     - name: Build application
-      run: |
-        if [ "${{ matrix.platform }}" = "win" ]; then
-          npm run dist:win
-        elif [ "${{ matrix.platform }}" = "mac" ]; then
-          npm run dist:mac
-        elif [ "${{ matrix.platform }}" = "linux" ]; then
-          npm run dist:linux
-        fi
+      run: npm run dist:win
 
     - name: Upload artifacts
       uses: actions/upload-artifact@v4
