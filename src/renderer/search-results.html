@@ -266,34 +266,92 @@
             }
 
             async getSearchResults(query) {
-                // Simulate API delay
-                await new Promise(resolve => setTimeout(resolve, 500));
+                try {
+                    // Sử dụng Google Custom Search API hoặc DuckDuckGo Instant Answer API
+                    const results = await this.fetchRealSearchResults(query);
+                    return results;
+                } catch (error) {
+                    console.error('Failed to fetch real search results:', error);
+                    // Fallback to mock results if API fails
+                    return this.getMockResults(query);
+                }
+            }
 
-                // Mock search results
-                const mockResults = [
+            async fetchRealSearchResults(query) {
+                // Sử dụng DuckDuckGo Instant Answer API (miễn phí, không cần API key)
+                const response = await fetch(`https://api.duckduckgo.com/?q=${encodeURIComponent(query)}&format=json&no_html=1&skip_disambig=1`);
+                const data = await response.json();
+                
+                const results = [];
+                
+                // Thêm Abstract (tóm tắt) nếu có
+                if (data.Abstract) {
+                    results.push({
+                        title: data.Heading || query,
+                        url: data.AbstractURL || `https://duckduckgo.com/?q=${encodeURIComponent(query)}`,
+                        snippet: data.Abstract
+                    });
+                }
+                
+                // Thêm Related Topics
+                if (data.RelatedTopics && data.RelatedTopics.length > 0) {
+                    data.RelatedTopics.slice(0, 3).forEach(topic => {
+                        if (topic.Text && topic.FirstURL) {
+                            results.push({
+                                title: topic.Text.split(' - ')[0] || topic.Text,
+                                url: topic.FirstURL,
+                                snippet: topic.Text
+                            });
+                        }
+                    });
+                }
+                
+                // Thêm Wikipedia nếu có
+                if (data.AbstractURL && data.AbstractURL.includes('wikipedia')) {
+                    results.push({
+                        title: `Wikipedia - ${data.Heading || query}`,
+                        url: data.AbstractURL,
+                        snippet: data.Abstract
+                    });
+                }
+                
+                // Nếu không có kết quả từ DuckDuckGo, thêm một số kết quả mặc định
+                if (results.length === 0) {
+                    results.push({
+                        title: `Tìm kiếm "${query}" trên Google`,
+                        url: `https://www.google.com/search?q=${encodeURIComponent(query)}`,
+                        snippet: `Tìm kiếm "${query}" trên Google để có kết quả đầy đủ nhất.`
+                    });
+                    
+                    results.push({
+                        title: `Tìm kiếm "${query}" trên YouTube`,
+                        url: `https://www.youtube.com/results?search_query=${encodeURIComponent(query)}`,
+                        snippet: `Xem video về "${query}" trên YouTube.`
+                    });
+                }
+                
+                return results.slice(0, 5); // Giới hạn 5 kết quả
+            }
+
+            getMockResults(query) {
+                // Fallback mock results
+                return [
                     {
-                        title: `Kết quả tìm kiếm cho "${query}"`,
-                        url: `https://example.com/search?q=${encodeURIComponent(query)}`,
-                        snippet: `Đây là kết quả tìm kiếm cho từ khóa "${query}". Trong ứng dụng thực tế, bạn sẽ tích hợp với Google Search API hoặc Bing Search API để lấy kết quả thực sự.`
+                        title: `Tìm kiếm "${query}" trên Google`,
+                        url: `https://www.google.com/search?q=${encodeURIComponent(query)}`,
+                        snippet: `Tìm kiếm "${query}" trên Google để có kết quả đầy đủ nhất.`
+                    },
+                    {
+                        title: `Tìm kiếm "${query}" trên YouTube`,
+                        url: `https://www.youtube.com/results?search_query=${encodeURIComponent(query)}`,
+                        snippet: `Xem video về "${query}" trên YouTube.`
                     },
                     {
                         title: `Wikipedia - ${query}`,
                         url: `https://vi.wikipedia.org/wiki/${encodeURIComponent(query)}`,
-                        snippet: `Bài viết Wikipedia về "${query}". Wikipedia là bách khoa toàn thư mở, nơi mọi người có thể đóng góp và chỉnh sửa nội dung.`
-                    },
-                    {
-                        title: `Hướng dẫn về ${query}`,
-                        url: `https://example.com/guide/${encodeURIComponent(query)}`,
-                        snippet: `Hướng dẫn chi tiết về "${query}". Tìm hiểu cách sử dụng, các tính năng và mẹo hay nhất.`
-                    },
-                    {
-                        title: `Tin tức ${query}`,
-                        url: `https://example.com/news/${encodeURIComponent(query)}`,
-                        snippet: `Tin tức mới nhất về "${query}". Cập nhật thông tin, sự kiện và phát triển liên quan.`
+                        snippet: `Tìm hiểu về "${query}" trên Wikipedia.`
                     }
                 ];
-
-                return mockResults;
             }
 
             displayResults(results, query) {
