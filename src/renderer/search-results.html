@@ -278,9 +278,80 @@
             }
 
             async fetchRealSearchResults(query) {
-                // Sử dụng phương pháp nhanh hơn - tạo kết quả thông minh
-                const results = await this.generateSmartSearchResults(query);
-                return results;
+                try {
+                    // Sử dụng DuckDuckGo Instant Answer API (nhanh và miễn phí)
+                    const results = await this.fetchDuckDuckGoResults(query);
+                    return results;
+                } catch (error) {
+                    console.error('DuckDuckGo search failed:', error);
+                    // Fallback to smart results
+                    return this.generateSmartSearchResults(query);
+                }
+            }
+
+            async fetchDuckDuckGoResults(query) {
+                // DuckDuckGo Instant Answer API - nhanh và không cần API key
+                const response = await fetch(`https://api.duckduckgo.com/?q=${encodeURIComponent(query)}&format=json&no_html=1&skip_disambig=1`);
+                const data = await response.json();
+                
+                const results = [];
+                
+                // Thêm Abstract (tóm tắt chính) nếu có
+                if (data.Abstract) {
+                    results.push({
+                        title: data.Heading || query,
+                        url: data.AbstractURL || `https://duckduckgo.com/?q=${encodeURIComponent(query)}`,
+                        snippet: data.Abstract
+                    });
+                }
+                
+                // Thêm Related Topics (chủ đề liên quan)
+                if (data.RelatedTopics && data.RelatedTopics.length > 0) {
+                    data.RelatedTopics.slice(0, 3).forEach(topic => {
+                        if (topic.Text && topic.FirstURL) {
+                            results.push({
+                                title: topic.Text.split(' - ')[0] || topic.Text,
+                                url: topic.FirstURL,
+                                snippet: topic.Text
+                            });
+                        }
+                    });
+                }
+                
+                // Thêm Wikipedia nếu có
+                if (data.AbstractURL && data.AbstractURL.includes('wikipedia')) {
+                    results.push({
+                        title: `Wikipedia - ${data.Heading || query}`,
+                        url: data.AbstractURL,
+                        snippet: data.Abstract
+                    });
+                }
+                
+                // Thêm Definition nếu có
+                if (data.Definition) {
+                    results.push({
+                        title: `Định nghĩa: ${query}`,
+                        url: `https://duckduckgo.com/?q=${encodeURIComponent(query)}`,
+                        snippet: data.Definition
+                    });
+                }
+                
+                // Nếu có ít kết quả, thêm một số kết quả mặc định
+                if (results.length < 3) {
+                    results.push({
+                        title: `Tìm kiếm "${query}" trên Google`,
+                        url: `https://www.google.com/search?q=${encodeURIComponent(query)}`,
+                        snippet: `Tìm kiếm "${query}" trên Google để có kết quả đầy đủ nhất.`
+                    });
+                    
+                    results.push({
+                        title: `Video về "${query}" trên YouTube`,
+                        url: `https://www.youtube.com/results?search_query=${encodeURIComponent(query)}`,
+                        snippet: `Xem video và hướng dẫn về "${query}" trên YouTube.`
+                    });
+                }
+                
+                return results.slice(0, 6); // Giới hạn 6 kết quả
             }
 
             async generateSmartSearchResults(query) {
