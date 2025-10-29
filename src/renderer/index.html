@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Carbonate Browser</title>
+    <link rel="stylesheet" href="styles/main.css">
+    <link rel="stylesheet" href="styles/components.css">
+    <link rel="stylesheet" href="styles/apps.css">
+</head>
+<body>
+    <div class="browser-container">
+        <!-- Top Navigation Bar -->
+        <div class="nav-bar">
+            <div class="nav-controls">
+                <button class="nav-btn" id="backBtn" title="Back">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/>
+                    </svg>
+                </button>
+                <button class="nav-btn" id="forwardBtn" title="Forward">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M12 4l-1.41 1.41L16.17 11H4v2h12.17l-5.58 5.59L12 20l8-8z"/>
+                    </svg>
+                </button>
+                <button class="nav-btn" id="refreshBtn" title="Refresh">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M17.65 6.35C16.2 4.9 14.21 4 12 4c-4.42 0-7.99 3.58-7.99 8s3.57 8 7.99 8c3.73 0 6.84-2.55 7.73-6h-2.08c-.82 2.33-3.04 4-5.65 4-3.31 0-6-2.69-6-6s2.69-6 6-6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z"/>
+                    </svg>
+                </button>
+            </div>
+            
+            <div class="address-bar-container">
+                <div class="address-bar">
+                    <input type="text" id="addressInput" placeholder="Search with Yahoo or enter address" autocomplete="off">
+                    <div class="search-suggestions" id="searchSuggestions"></div>
+                </div>
+            </div>
+            
+            <div class="nav-actions">
+                <button class="nav-btn" id="bookmarkBtn" title="Bookmark this page">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M17 3H7c-1.1 0-1.99.9-1.99 2L5 21l7-3 7 3V5c0-1.1-.9-2-2-2z"/>
+                    </svg>
+                </button>
+                <button class="nav-btn" id="appsBtn" title="Built-in Apps">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M4 6h16v2H4zm0 5h16v2H4zm0 5h16v2H4z"/>
+                    </svg>
+                </button>
+                <button class="nav-btn" id="settingsBtn" title="Settings">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M19.14,12.94c0.04-0.3,0.06-0.61,0.06-0.94c0-0.32-0.02-0.64-0.07-0.94l2.03-1.58c0.18-0.14,0.23-0.41,0.12-0.61 l-1.92-3.32c-0.12-0.22-0.37-0.29-0.59-0.22l-2.39,0.96c-0.5-0.38-1.03-0.7-1.62-0.94L14.4,2.81c-0.04-0.24-0.24-0.41-0.48-0.41 h-3.84c-0.24,0-0.43,0.17-0.47,0.41L9.25,5.35C8.66,5.59,8.12,5.92,7.63,6.29L5.24,5.33c-0.22-0.08-0.47,0-0.59,0.22L2.74,8.87 C2.62,9.08,2.66,9.34,2.86,9.48l2.03,1.58C4.84,11.36,4.82,11.69,4.82,12s0.02,0.64,0.07,0.94l-2.03,1.58 c-0.18,0.14-0.23,0.41-0.12,0.61l1.92,3.32c0.12,0.22,0.37,0.29,0.59,0.22l2.39-0.96c0.5,0.38,1.03,0.7,1.62,0.94l0.36,2.54 c0.05,0.24,0.24,0.41,0.48,0.41h3.84c0.24,0,0.44-0.17,0.47-0.41l0.36-2.54c0.59-0.24,1.13-0.56,1.62-0.94l2.39,0.96 c0.22,0.08,0.47,0,0.59-0.22l1.92-3.32c0.12-0.22,0.07-0.47-0.12-0.61L19.14,12.94z M12,15.6c-1.98,0-3.6-1.62-3.6-3.6 s1.62-3.6,3.6-3.6s3.6,1.62,3.6,3.6S13.98,15.6,12,15.6z"/>
+                    </svg>
+                </button>
+            </div>
+        </div>
+
+        <!-- Tab Bar -->
+        <div class="tab-bar">
+            <div class="tabs-container" id="tabsContainer">
+                <div class="tab active" data-tab-id="1">
+                    <span class="tab-title">New Tab</span>
+                    <button class="tab-close" data-tab-id="1">×</button>
+                </div>
+            </div>
+            <button class="new-tab-btn" id="newTabBtn" title="New Tab">+</button>
+        </div>
+
+        <!-- Main Content Area -->
+        <div class="content-area">
+            <div class="tab-content active" id="tab-1">
+                <!-- New Tab Page -->
+                <div class="new-tab-page">
+                    <div class="logo">
+                        <h1>Carbonate Browser</h1>
+                        <p>Fast, lightweight browsing with built-in apps</p>
+                    </div>
+                    
+                    <div class="search-container">
+                        <div class="search-box">
+                            <input type="text" id="newTabSearch" placeholder="Search with Yahoo or enter address" autocomplete="off">
+                            <button id="newTabSearchBtn">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                                    <path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/>
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Quick Access Apps -->
+                    <div class="quick-apps">
+                        <h3>Built-in Apps</h3>
+                        <div class="apps-grid" id="appsGrid">
+                            <!-- Apps will be populated by JavaScript -->
+                        </div>
+                    </div>
+
+                    <!-- Bookmarks -->
+                    <div class="bookmarks-section">
+                        <h3>Bookmarks</h3>
+                        <div class="bookmarks-grid" id="bookmarksGrid">
+                            <!-- Bookmarks will be populated by JavaScript -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modals -->
+    <div class="modal" id="bookmarkModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Add Bookmark</h3>
+                <button class="modal-close">&times;</button>
+            </div>
+            <div class="modal-body">
+                <form id="bookmarkForm">
+                    <div class="form-group">
+                        <label for="bookmarkTitle">Title:</label>
+                        <input type="text" id="bookmarkTitle" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="bookmarkUrl">URL:</label>
+                        <input type="url" id="bookmarkUrl" required>
+                    </div>
+                    <div class="form-actions">
+                        <button type="button" class="btn btn-secondary" id="cancelBookmark">Cancel</button>
+                        <button type="submit" class="btn btn-primary">Add Bookmark</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal" id="settingsModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Settings</h3>
+                <button class="modal-close">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="settings-section">
+                    <h4>General</h4>
+                    <div class="setting-item">
+                        <label>
+                            <input type="checkbox" id="autoLaunch"> 
+                            Start Carbonate Browser when Windows starts
+                        </label>
+                    </div>
+                    <div class="setting-item">
+                        <label>
+                            <input type="checkbox" id="showBookmarks"> 
+                            Show bookmarks on new tab page
+                        </label>
+                    </div>
+                </div>
+                <div class="settings-section">
+                    <h4>Search</h4>
+                    <div class="setting-item">
+                        <label for="searchEngine">Default Search Engine:</label>
+                        <select id="searchEngine">
+                            <option value="yahoo">Yahoo</option>
+                            <option value="google">Google</option>
+                            <option value="bing">Bing</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal" id="appsModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Built-in Apps</h3>
+                <button class="modal-close">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="apps-grid-large" id="appsGridLarge">
+                    <!-- Apps will be populated by JavaScript -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/main.js"></script>
+    <script src="js/tabs.js"></script>
+    <script src="js/search.js"></script>
+    <script src="js/bookmarks.js"></script>
+    <script src="js/apps.js"></script>
+</body>
+</html>

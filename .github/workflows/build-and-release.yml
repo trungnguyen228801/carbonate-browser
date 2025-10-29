@@ -1,0 +1,149 @@
+name: Build and Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ${{ matrix.os }}
+    
+    strategy:
+      matrix:
+        include:
+          - os: windows-latest
+            platform: win
+            arch: x64
+          - os: macos-latest
+            platform: mac
+            arch: x64
+          - os: macos-latest
+            platform: mac
+            arch: arm64
+          - os: ubuntu-latest
+            platform: linux
+            arch: x64
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+        cache: 'npm'
+
+    - name: Install dependencies
+      run: npm ci
+
+    - name: Build application
+      run: |
+        if [ "${{ matrix.platform }}" = "win" ]; then
+          npm run dist:win
+        elif [ "${{ matrix.platform }}" = "mac" ]; then
+          npm run dist:mac
+        elif [ "${{ matrix.platform }}" = "linux" ]; then
+          npm run dist:linux
+        fi
+
+    - name: Upload artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: ${{ matrix.platform }}-${{ matrix.arch }}
+        path: dist/
+        retention-days: 30
+
+  release:
+    needs: build
+    runs-on: ubuntu-latest
+    if: startsWith(github.ref, 'refs/tags/')
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Download all artifacts
+      uses: actions/download-artifact@v4
+      with:
+        path: artifacts/
+
+    - name: Prepare release assets
+      run: |
+        mkdir -p release
+        find artifacts -name "*.exe" -o -name "*.dmg" -o -name "*.AppImage" -o -name "*.deb" -o -name "*.rpm" | while read file; do
+          cp "$file" release/
+        done
+
+    - name: Create release info
+      run: |
+        cat > release/release-info.json << EOF
+        {
+          "version": "${GITHUB_REF#refs/tags/}",
+          "releaseDate": "$(date -u +%Y-%m-%dT%H:%M:%SZ)",
+          "platforms": {
+            "windows": [],
+            "macos": [],
+            "linux": []
+          },
+          "files": []
+        }
+        EOF
+
+    - name: Generate checksums
+      run: |
+        cd release
+        for file in *; do
+          if [ -f "$file" ]; then
+            sha256sum "$file" >> checksums.txt
+          fi
+        done
+
+    - name: Create Release
+      uses: softprops/action-gh-release@v1
+      with:
+        files: release/*
+        body: |
+          ## 🚀 Carbonate Browser ${{ github.ref_name }}
+          
+          ### 📥 Downloads
+          
+          **Windows:**
+          - Installer: `Carbonate-Browser-Setup.exe`
+          - Portable: `Carbonate-Browser-Portable.exe`
+          
+          **macOS:**
+          - DMG: `Carbonate-Browser.dmg`
+          - ZIP: `Carbonate-Browser.zip`
+          
+          **Linux:**
+          - AppImage: `Carbonate-Browser.AppImage`
+          - DEB: `carbonate-browser_*.deb`
+          - RPM: `carbonate-browser-*.rpm`
+          
+          ### 🔧 Installation
+          
+          **Windows:** Run the installer as administrator
+          
+          **macOS:** Open DMG and drag to Applications
+          
+          **Linux:** 
+          - AppImage: `chmod +x *.AppImage && ./Carbonate-Browser.AppImage`
+          - DEB: `sudo dpkg -i carbonate-browser_*.deb`
+          - RPM: `sudo rpm -i carbonate-browser-*.rpm`
+          
+          ### 📋 System Requirements
+          - Windows 10/11 (64-bit)
+          - macOS 10.14+
+          - Linux (Ubuntu 18.04+, Fedora 30+)
+          - 4GB RAM (8GB recommended)
+          - 200MB free disk space
+          
+          ### 🔐 Verification
+          Checksums are available in `checksums.txt`
+        draft: false
+        prerelease: false
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

@@ -1,0 +1,127 @@
+{
+  "name": "carbonate-browser",
+  "version": "1.0.0",
+  "description": "Carbonate Browser - A fast, lightweight Chromium-based browser with built-in apps",
+  "main": "src/main.js",
+  "scripts": {
+    "start": "electron .",
+    "dev": "electron . --dev",
+    "build": "electron-builder",
+    "dist": "electron-builder --publish=never",
+    "dist:win": "electron-builder --win --publish=never",
+    "dist:mac": "electron-builder --mac --publish=never",
+    "dist:linux": "electron-builder --linux --publish=never",
+    "build:all": "node scripts/build-all.js",
+    "pack": "electron-builder --dir",
+    "postinstall": "electron-builder install-app-deps"
+  },
+  "keywords": [
+    "browser",
+    "electron",
+    "chromium",
+    "desktop"
+  ],
+  "author": "Carbonate Team",
+  "license": "MIT",
+  "devDependencies": {
+    "electron": "^27.0.0",
+    "electron-builder": "^24.6.4"
+  },
+  "dependencies": {
+    "electron-store": "^8.1.0",
+    "node-fetch": "^2.6.7",
+    "sqlite3": "^5.1.6"
+  },
+  "build": {
+    "appId": "com.carbonate.browser",
+    "productName": "Carbonate Browser",
+    "directories": {
+      "output": "dist"
+    },
+    "files": [
+      "src/**/*",
+      "assets/**/*",
+      "node_modules/**/*"
+    ],
+    "win": {
+      "target": [
+        {
+          "target": "nsis",
+          "arch": ["x64", "ia32"]
+        },
+        {
+          "target": "portable",
+          "arch": ["x64", "ia32"]
+        }
+      ],
+      "icon": "assets/icon.ico",
+      "publisherName": "Carbonate Team",
+      "verifyUpdateCodeSignature": false
+    },
+    "mac": {
+      "target": [
+        {
+          "target": "dmg",
+          "arch": ["x64", "arm64"]
+        },
+        {
+          "target": "zip",
+          "arch": ["x64", "arm64"]
+        }
+      ],
+      "icon": "assets/icon.png",
+      "category": "public.app-category.productivity"
+    },
+    "linux": {
+      "target": [
+        {
+          "target": "AppImage",
+          "arch": ["x64"]
+        },
+        {
+          "target": "deb",
+          "arch": ["x64"]
+        },
+        {
+          "target": "rpm",
+          "arch": ["x64"]
+        }
+      ],
+      "icon": "assets/icon.png",
+      "category": "Network"
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "runAfterFinish": true,
+      "installerIcon": "assets/icon.ico",
+      "uninstallerIcon": "assets/icon.ico",
+      "installerHeaderIcon": "assets/icon.ico",
+      "deleteAppDataOnUninstall": false
+    },
+    "dmg": {
+      "title": "Carbonate Browser Installer",
+      "icon": "assets/icon.png",
+      "background": "assets/dmg-background.png",
+      "contents": [
+        {
+          "x": 130,
+          "y": 220
+        },
+        {
+          "x": 410,
+          "y": 220,
+          "type": "link",
+          "path": "/Applications"
+        }
+      ]
+    },
+    "publish": {
+      "provider": "github",
+      "owner": "your-username",
+      "repo": "carbonate-browser"
+    }
+  }
+}
