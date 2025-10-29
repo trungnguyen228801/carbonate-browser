@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kết quả tìm kiếm</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #f8f9fa;
+            color: #333;
+        }
+
+        .search-header {
+            background: white;
+            border-bottom: 1px solid #e1e5e9;
+            padding: 20px;
+        }
+
+        .search-form {
+            display: flex;
+            align-items: center;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .search-input {
+            flex: 1;
+            padding: 12px 16px;
+            border: 1px solid #ddd;
+            border-radius: 24px 0 0 24px;
+            font-size: 16px;
+            outline: none;
+        }
+
+        .search-input:focus {
+            border-color: #4285f4;
+        }
+
+        .search-btn {
+            padding: 12px 20px;
+            background: #4285f4;
+            color: white;
+            border: none;
+            border-radius: 0 24px 24px 0;
+            cursor: pointer;
+            font-size: 16px;
+        }
+
+        .search-btn:hover {
+            background: #3367d6;
+        }
+
+        .search-stats {
+            margin-top: 10px;
+            color: #666;
+            font-size: 14px;
+        }
+
+        .results-container {
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .result-item {
+            background: white;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 16px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            transition: box-shadow 0.2s;
+        }
+
+        .result-item:hover {
+            box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+        }
+
+        .result-title {
+            font-size: 18px;
+            color: #1a0dab;
+            text-decoration: none;
+            margin-bottom: 8px;
+            display: block;
+        }
+
+        .result-title:hover {
+            text-decoration: underline;
+        }
+
+        .result-url {
+            color: #006621;
+            font-size: 14px;
+            margin-bottom: 8px;
+        }
+
+        .result-snippet {
+            color: #545454;
+            line-height: 1.4;
+        }
+
+        .no-results {
+            text-align: center;
+            padding: 40px;
+            color: #666;
+        }
+
+        .no-results h3 {
+            margin-bottom: 10px;
+            color: #333;
+        }
+
+        .suggestions {
+            margin-top: 20px;
+        }
+
+        .suggestion-item {
+            display: inline-block;
+            background: #f1f3f4;
+            color: #1a0dab;
+            padding: 8px 12px;
+            margin: 4px;
+            border-radius: 16px;
+            text-decoration: none;
+            font-size: 14px;
+        }
+
+        .suggestion-item:hover {
+            background: #e8f0fe;
+        }
+    </style>
+</head>
+<body>
+    <div class="search-header">
+        <form class="search-form" id="searchForm">
+            <input type="text" class="search-input" id="searchInput" placeholder="Tìm kiếm..." autocomplete="off">
+            <button type="submit" class="search-btn">Tìm kiếm</button>
+        </form>
+        <div class="search-stats" id="searchStats"></div>
+    </div>
+
+    <div class="results-container" id="resultsContainer">
+        <div class="no-results">
+            <h3>Nhập từ khóa để tìm kiếm</h3>
+            <p>Kết quả sẽ hiển thị ở đây</p>
+        </div>
+    </div>
+
+    <script>
+        class SearchResults {
+            constructor() {
+                this.init();
+            }
+
+            init() {
+                // Get search query from URL parameters
+                const urlParams = new URLSearchParams(window.location.search);
+                const query = urlParams.get('q');
+                
+                if (query) {
+                    document.getElementById('searchInput').value = query;
+                    this.performSearch(query);
+                }
+
+                // Setup search form
+                document.getElementById('searchForm').addEventListener('submit', (e) => {
+                    e.preventDefault();
+                    const query = document.getElementById('searchInput').value.trim();
+                    if (query) {
+                        this.performSearch(query);
+                    }
+                });
+            }
+
+            async performSearch(query) {
+                this.showLoading();
+                
+                try {
+                    // Simulate search results (in real app, you'd call a search API)
+                    const results = await this.getSearchResults(query);
+                    this.displayResults(results, query);
+                } catch (error) {
+                    this.showError('Có lỗi xảy ra khi tìm kiếm');
+                }
+            }
+
+            async getSearchResults(query) {
+                // Simulate API delay
+                await new Promise(resolve => setTimeout(resolve, 500));
+
+                // Mock search results
+                const mockResults = [
+                    {
+                        title: `Kết quả tìm kiếm cho "${query}"`,
+                        url: `https://example.com/search?q=${encodeURIComponent(query)}`,
+                        snippet: `Đây là kết quả tìm kiếm cho từ khóa "${query}". Trong ứng dụng thực tế, bạn sẽ tích hợp với Google Search API hoặc Bing Search API để lấy kết quả thực sự.`
+                    },
+                    {
+                        title: `Wikipedia - ${query}`,
+                        url: `https://vi.wikipedia.org/wiki/${encodeURIComponent(query)}`,
+                        snippet: `Bài viết Wikipedia về "${query}". Wikipedia là bách khoa toàn thư mở, nơi mọi người có thể đóng góp và chỉnh sửa nội dung.`
+                    },
+                    {
+                        title: `Hướng dẫn về ${query}`,
+                        url: `https://example.com/guide/${encodeURIComponent(query)}`,
+                        snippet: `Hướng dẫn chi tiết về "${query}". Tìm hiểu cách sử dụng, các tính năng và mẹo hay nhất.`
+                    },
+                    {
+                        title: `Tin tức ${query}`,
+                        url: `https://example.com/news/${encodeURIComponent(query)}`,
+                        snippet: `Tin tức mới nhất về "${query}". Cập nhật thông tin, sự kiện và phát triển liên quan.`
+                    }
+                ];
+
+                return mockResults;
+            }
+
+            displayResults(results, query) {
+                const container = document.getElementById('resultsContainer');
+                const stats = document.getElementById('searchStats');
+                
+                if (results.length === 0) {
+                    container.innerHTML = `
+                        <div class="no-results">
+                            <h3>Không tìm thấy kết quả cho "${query}"</h3>
+                            <p>Hãy thử với từ khóa khác hoặc kiểm tra chính tả</p>
+                            <div class="suggestions">
+                                <a href="#" class="suggestion-item">Tìm kiếm phổ biến</a>
+                                <a href="#" class="suggestion-item">Tin tức</a>
+                                <a href="#" class="suggestion-item">Hướng dẫn</a>
+                            </div>
+                        </div>
+                    `;
+                    stats.textContent = '';
+                    return;
+                }
+
+                const resultsHtml = results.map(result => `
+                    <div class="result-item">
+                        <a href="${result.url}" class="result-title" target="_blank">${result.title}</a>
+                        <div class="result-url">${result.url}</div>
+                        <div class="result-snippet">${result.snippet}</div>
+                    </div>
+                `).join('');
+
+                container.innerHTML = resultsHtml;
+                stats.textContent = `Khoảng ${results.length} kết quả (0.5 giây)`;
+
+                // Add click handlers for result links
+                container.querySelectorAll('.result-title').forEach(link => {
+                    link.addEventListener('click', (e) => {
+                        e.preventDefault();
+                        // Send message to parent window to navigate to the URL
+                        if (window.parent && window.parent !== window) {
+                            window.parent.postMessage({
+                                type: 'navigate',
+                                url: link.href
+                            }, '*');
+                        } else {
+                            // Fallback: open in new tab
+                            window.open(link.href, '_blank');
+                        }
+                    });
+                });
+            }
+
+            showLoading() {
+                const container = document.getElementById('resultsContainer');
+                container.innerHTML = `
+                    <div class="no-results">
+                        <h3>Đang tìm kiếm...</h3>
+                        <p>Vui lòng đợi trong giây lát</p>
+                    </div>
+                `;
+            }
+
+            showError(message) {
+                const container = document.getElementById('resultsContainer');
+                container.innerHTML = `
+                    <div class="no-results">
+                        <h3>Lỗi tìm kiếm</h3>
+                        <p>${message}</p>
+                    </div>
+                `;
+            }
+        }
+
+        // Initialize when page loads
+        document.addEventListener('DOMContentLoaded', () => {
+            new SearchResults();
+        });
+    </script>
+</body>
+</html>

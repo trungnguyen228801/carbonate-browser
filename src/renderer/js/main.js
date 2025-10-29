@@ -111,6 +111,13 @@ class CarbonateBrowser {
         window.electronAPI.onAddBookmark(() => this.showBookmarkModal());
         window.electronAPI.onOpenSettings(() => this.showSettingsModal());
         window.electronAPI.onOpenApps(() => this.showAppsModal());
+
+        // Listen for messages from iframe (search results)
+        window.addEventListener('message', (event) => {
+            if (event.data && event.data.type === 'navigate') {
+                this.navigateToUrl(event.data.url, true); // Create new tab for search results
+            }
+        });
     }
 
     setupSettingsForm() {
@@ -141,7 +148,7 @@ class CarbonateBrowser {
         });
     }
 
-    navigateToUrl(url) {
+    navigateToUrl(url, createNewTab = false) {
         if (!url) return;
 
         // Add protocol if missing
@@ -158,8 +165,17 @@ class CarbonateBrowser {
         // Update address bar
         document.getElementById('addressInput').value = url;
         
-        // Load the URL in the current tab
-        this.loadUrlInCurrentTab(url);
+        // If createNewTab is true or we're coming from search results, create new tab
+        if (createNewTab || this.isSearchUrl(url)) {
+            this.createNewTab();
+            // Wait a bit for the new tab to be created, then load URL
+            setTimeout(() => {
+                this.loadUrlInCurrentTab(url);
+            }, 100);
+        } else {
+            // Load the URL in the current tab
+            this.loadUrlInCurrentTab(url);
+        }
     }
 
     getSearchUrl(query) {
@@ -180,6 +196,43 @@ class CarbonateBrowser {
         
         if (!tabContent) return;
 
+        // Check if it's a search URL
+        if (this.isSearchUrl(url)) {
+            this.loadSearchResults(url, tabContent, currentTab);
+        } else {
+            this.loadWebPage(url, tabContent, currentTab);
+        }
+    }
+
+    isSearchUrl(url) {
+        return url.includes('search.yahoo.com') || 
+               url.includes('google.com/search') || 
+               url.includes('bing.com/search');
+    }
+
+    loadSearchResults(url, tabContent, currentTab) {
+        // Extract search query from URL
+        const query = this.extractSearchQuery(url);
+        
+        // Update tab title
+        const tabTitle = currentTab.querySelector('.tab-title');
+        if (tabTitle) {
+            tabTitle.textContent = `Tìm kiếm: ${query}`;
+        }
+
+        // Load custom search results page
+        tabContent.innerHTML = `
+            <div class="browser-content">
+                <iframe src="search-results.html?q=${encodeURIComponent(query)}" 
+                        style="width: 100%; height: 100%; border: none;">
+                </iframe>
+            </div>
+        `;
+
+        this.showToast('Tìm kiếm: ' + query, 'success');
+    }
+
+    loadWebPage(url, tabContent, currentTab) {
         // Update tab title
         const tabTitle = currentTab.querySelector('.tab-title');
         if (tabTitle) {
@@ -196,8 +249,17 @@ class CarbonateBrowser {
             </div>
         `;
 
-        // Show loading state
         this.showToast('Loading: ' + url, 'success');
+    }
+
+    extractSearchQuery(url) {
+        try {
+            const urlObj = new URL(url);
+            const params = new URLSearchParams(urlObj.search);
+            return params.get('p') || params.get('q') || 'tìm kiếm';
+        } catch (e) {
+            return 'tìm kiếm';
+        }
     }
 
     extractDomain(url) {
